@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Custom CSS keyframes and animations */
+@keyframes coin-flip-tails {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(1800deg); }
+}
+
+@keyframes coin-flip-heads {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(1980deg); }
+}
+
+.animate-coin-tails {
+  animation: coin-flip-tails 2.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-coin-heads {
+  animation: coin-flip-heads 2.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Soccer field lines overlay */
+.pitch-bg {
+  background-image: 
+    radial-gradient(circle at 50% 50%, transparent 120px, rgba(250, 204, 21, 0.05) 120px, rgba(250, 204, 21, 0.05) 122px, transparent 122px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: cover, 40px 40px, 40px 40px;
+}
+

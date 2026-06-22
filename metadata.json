@@ -1,0 +1,6 @@
+{
+  "name": "Black Jack da Copa 2026",
+  "description": "Um jogo temático de Black Jack de futebol com craques da Copa, Cara ou Coroa inicial, efeitos sonoros integrados e visual em verde e amarelo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
