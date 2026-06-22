@@ -1,13 +1,1439 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Black Jack da Copa 2026</title>
+    <title>Black Jack da Copa 2026 - Edição Premium</title>
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Space Grotesk and JetBrains Mono Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom Animations */
+      @keyframes coin-flip-tails {
+        0% { transform: rotateY(0deg); }
+        100% { transform: rotateY(1800deg); }
+      }
+      @keyframes coin-flip-heads {
+        0% { transform: rotateY(0deg); }
+        100% { transform: rotateY(1980deg); }
+      }
+      .animate-coin-tails {
+        animation: coin-flip-tails 2.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      }
+      .animate-coin-heads {
+        animation: coin-flip-heads 2.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      }
+      @keyframes bounce-bar {
+        0% { height: 3px; }
+        100% { height: 14px; }
+      }
+      .visualizer-bar {
+        animation: bounce-bar 0.5s ease-in-out infinite alternate;
+      }
+      /* Soccer Field pattern */
+      .pitch-bg {
+        background-image: 
+          radial-gradient(circle at 50% 50%, transparent 120px, rgba(250, 204, 21, 0.05) 120px, rgba(250, 204, 21, 0.05) 122px, transparent 122px),
+          linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: cover, 40px 40px, 40px 40px;
+      }
+      .truncate-3-lines {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;  
+        overflow: hidden;
+      }
+    </style>
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+  <body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between relative overflow-hidden font-sans select-none pb-8 sm:pb-12">
+    <!-- background Pitch -->
+    <div class="absolute inset-0 pitch-bg opacity-30 pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/40 to-slate-950 pointer-events-none"></div>
+
+    <!-- Alert / Instruction Banner -->
+    <div id="instruction-banner" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-900 font-extrabold px-6 py-3 rounded-full shadow-2xl shadow-yellow-500/20 flex items-center gap-2.5 border-2 border-slate-950 tracking-wide text-xs sm:text-sm uppercase select-none pointer-events-none transition-all duration-300 opacity-0 -translate-y-10">
+      <span class="text-xl animate-bounce">⚽</span>
+      <span id="instruction-message" class="drop-shadow-sm">Boas vindas!</span>
+      <span class="text-xl animate-bounce" style="animation-delay: 0.15s">📢</span>
+    </div>
+
+    <!-- Header bar -->
+    <header class="w-full max-w-5xl mx-auto px-4 py-4 flex items-center justify-between z-30 relative">
+      <button onclick="changeScreen('HOME')" class="flex items-center gap-2 group cursor-pointer bg-transparent border-0 text-left">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-r from-yellow-400 to-green-500 flex items-center justify-center font-extrabold text-slate-950 text-xl shadow-lg ring-2 ring-yellow-400">
+          ⚽
+        </div>
+        <div class="flex flex-col">
+          <span class="text-sm font-black tracking-tight text-white group-hover:text-yellow-400 transition-colors">
+            BLACK JACK
+          </span>
+          <span class="text-[10px] uppercase font-mono tracking-widest text-green-500 leading-none">
+            DA COPA 2026
+          </span>
+        </div>
+      </button>
+
+      <div class="flex items-center gap-2.5">
+        <button onclick="toggleHowToPlay(true)" class="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-300 hover:text-yellow-400 flex items-center justify-center hover:bg-slate-800 cursor-pointer transition-all" title="Como jogar">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </button>
+
+        <!-- Sound toggle widget -->
+        <div id="sound-bar" class="flex items-center gap-2.5 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-yellow-500/30 shadow-lg shadow-black/40">
+          <div class="flex items-center gap-1">
+            <svg id="sound-antenna" class="w-3.5 h-3.5 text-emerald-400 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+            <span id="sound-status-text" class="text-[9px] font-mono tracking-widest text-slate-400 uppercase">ÁUDIO ATIVO</span>
+          </div>
+          <div class="flex items-end gap-0.5 h-3">
+            <div class="w-[2px] h-2 bg-emerald-400 visualizer-bar" style="animation-delay: 0.1s"></div>
+            <div class="w-[2px] h-3 bg-emerald-400 visualizer-bar" style="animation-delay: 0.3s"></div>
+            <div class="w-[2px] h-1 bg-emerald-400 visualizer-bar" style="animation-delay: 0.2s"></div>
+            <div class="w-[2px] h-3 bg-emerald-400 visualizer-bar" style="animation-delay: 0.5s"></div>
+            <div class="w-[2px] h-2 bg-emerald-400 visualizer-bar" style="animation-delay: 0.4s"></div>
+          </div>
+          <button onclick="toggleMute()" class="text-yellow-400 hover:text-yellow-300 active:scale-95 p-1 rounded-full cursor-pointer transition-all bg-transparent border-0" id="btn-sound-toggle">
+            <svg class="w-4 h-4 text-emerald-400" id="icon-sound-on" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Help Modal -->
+    <div id="rules-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+      <div class="w-full max-w-md bg-slate-900 border-2 border-yellow-500/40 rounded-3xl p-6 relative shadow-2xl">
+        <h3 class="text-xl font-black text-yellow-400 flex items-center gap-2 mb-3">
+          🏆 Regras da Copa do Blackjack
+        </h3>
+        <div class="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans max-h-96 overflow-y-auto pr-1">
+          <p>O objetivo é montar um elenco cuja pontuação chegue o mais próximo possível de <strong class="text-yellow-400">21 pontos</strong>, sem estourar!</p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-emerald-500/20">
+            <h4 class="font-bold text-emerald-400 flex items-center gap-1.5 mb-1.5">🛡️ Valor Tático dos Craques:</h4>
+            <ul class="space-y-1 list-disc pl-4 text-xs">
+              <li><strong>Cartas Comuns:</strong> Valem a pontuação do jogador (Ex: Mbappé vale 10, Vini Jr vale 9, Rodri vale 7, Maignan vale 3).</li>
+              <li><strong>Cartas Lendárias Douradas (Pelé, Ronaldo, Messi, CR7, Maradona):</strong> São curingas de luxo e valem de <strong class="text-yellow-400">1 a 11 pontos</strong>! Você escolhe o valor tático no instante em que as compra!</li>
+            </ul>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-yellow-500/10">
+            <h4 class="font-bold text-yellow-400 flex items-center gap-1.5 mb-1.5">🪙 Sorteio de Campo (Cara ou Coroa):</h4>
+            <p class="text-xs">Quem vencer o sorteio inicial começa fazendo a escalação inicial e jogando o primeiro lance!</p>
+          </div>
+        </div>
+        <button onclick="toggleHowToPlay(false)" class="mt-6 w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 font-extrabold text-slate-950 rounded-xl hover:from-green-400 tracking-wide text-xs uppercase cursor-pointer border-0">
+          Entendido, Mandar Ver!
+        </button>
+      </div>
+    </div>
+
+    <!-- Gold choice modal list -->
+    <div id="gold-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4 z-50">
+      <div class="w-full max-w-sm bg-slate-950 border-2 border-yellow-400 rounded-3xl p-6 text-center shadow-2xl">
+        <span class="text-4xl animate-bounce inline-block mb-2">⭐</span>
+        <h4 id="gold-modal-title" class="text-xl font-black text-yellow-400 uppercase tracking-tight">Choice de Craque!</h4>
+        <p class="text-xs text-slate-300 mt-1">Escolha o valor tático do seu craque lendário (1 a 11):</p>
+        <div class="grid grid-cols-4 gap-2 mt-5">
+          <button onclick="assignGoldValue(1)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">1</button>
+          <button onclick="assignGoldValue(2)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">2</button>
+          <button onclick="assignGoldValue(3)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">3</button>
+          <button onclick="assignGoldValue(4)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">4</button>
+          <button onclick="assignGoldValue(5)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">5</button>
+          <button onclick="assignGoldValue(6)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">6</button>
+          <button onclick="assignGoldValue(7)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">7</button>
+          <button onclick="assignGoldValue(8)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">8</button>
+          <button onclick="assignGoldValue(9)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">9</button>
+          <button onclick="assignGoldValue(10)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">10</button>
+          <button onclick="assignGoldValue(11)" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-2 rounded-full text-xs cursor-pointer border-0">11</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Screens Root -->
+    <main class="w-full max-w-5xl mx-auto px-4 py-2 flex-grow flex items-center justify-center z-20 relative">
+
+      <!-- TELA HOME -->
+      <div id="screen-home" class="flex flex-col items-center text-center max-w-lg mx-auto">
+        <div class="relative mb-6">
+          <div class="absolute inset-0 bg-yellow-400/20 blur-3xl rounded-full scale-125 animate-pulse"></div>
+          <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-yellow-300 via-emerald-800 to-green-950 border-3 border-yellow-400 p-1 shadow-2xl flex items-center justify-center relative z-10 hover:rotate-12 transition-transform duration-300">
+            <svg class="w-14 h-14 text-yellow-400 drop-shadow-[0_4px_12px_rgba(234,179,8,0.7)]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15a3 3 0 100-6 3 3 0 000 6zm0 0v6M9 12H3m18 0h-6M12 3v3m0 0v3m0-3h3m-3 0H9"></path></svg>
+          </div>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl font-black italic tracking-tighter leading-none bg-gradient-to-b from-yellow-100 via-yellow-400 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] uppercase select-none scale-y-110">
+          BLACK JACK
+        </h1>
+        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-widest text-[#22C55E] uppercase drop-shadow mt-1 select-none flex items-center gap-1.5 justify-center">
+          <span>★</span> COPA 2026 <span>★</span>
+        </h2>
+        
+        <p class="max-w-xs text-xs sm:text-sm text-slate-400 mt-3 font-mono">
+          O lendário jogo de cartas de cassino com super craques táticos, vestindo a camisa verde e amarela!
+        </p>
+
+        <div class="mt-8 w-full space-y-3 px-4 sm:px-8">
+          <button onclick="startGameMode('CPU')" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-slate-950 font-black py-4 px-6 rounded-2xl text-sm sm:text-base tracking-widest border-b-4 border-emerald-800 hover:from-green-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0.5 cursor-pointer uppercase flex items-center justify-center gap-2.5 border-0">
+            JOGAR VS CPU
+          </button>
+          <button onclick="changeScreen('MP_MENU')" class="w-full bg-slate-900/90 text-yellow-400 font-black py-4 px-6 rounded-2xl text-sm sm:text-base tracking-widest border border-yellow-500/40 hover:bg-slate-800 hover:text-yellow-300 shadow-lg shadow-black/80 transition-all transform hover:-translate-y-0.5 active:translate-y-0.5 cursor-pointer uppercase flex items-center justify-center gap-2.5">
+            JOGAR VS AMIGO
+          </button>
+        </div>
+
+        <div class="mt-12 flex items-center gap-1.5 text-slate-500 text-[10px] uppercase font-mono tracking-widest bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800/80">
+          <span>🏟️</span> Estádio AI Studio Nacional
+        </div>
+      </div>
+
+      <!-- TELA MULTIPLAYER MENU -->
+      <div id="screen-mp-menu" class="w-full max-w-md mx-auto bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative hidden">
+        <h3 class="text-2xl font-black text-yellow-400 text-center uppercase tracking-tight">
+          Modo Multiplayer 👥
+        </h3>
+        <p class="text-xs text-slate-400 text-center mt-1">
+          Escolha jogar localmente passando o aparelho ou envie desafios para os amigos via WhatsApp!
+        </p>
+
+        <div class="mt-6 space-y-3">
+          <button onclick="startGameMode('MP_LOCAL')" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 text-slate-950 font-extrabold py-3.5 px-6 rounded-xl text-xs sm:text-sm tracking-widest cursor-pointer uppercase flex items-center justify-center gap-2 border-0">
+            1) No Mesmo Aparelho (Local)
+          </button>
+          <button onclick="startGameMode('MP_WHATSAPP')" class="w-full bg-slate-950 border border-emerald-500/40 text-emerald-400 hover:text-emerald-300 font-extrabold py-3.5 px-6 rounded-xl text-xs sm:text-sm tracking-widest cursor-pointer uppercase flex items-center justify-center gap-2">
+            2) Desafiar Via WhatsApp
+          </button>
+        </div>
+
+        <div class="mt-6 pt-5 border-t border-slate-800">
+          <label class="block text-xs font-bold text-yellow-500/90 uppercase tracking-widest mb-2 text-center">
+            Já recebeu um código de desafio?
+          </label>
+          <textarea id="import-code-area" placeholder="Cole o código COPA2026#... recebido aqui para iniciar" class="w-full h-24 bg-slate-950 border border-slate-800 text-slate-300 placeholder-slate-600 rounded-xl p-3 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-yellow-400 resize-none leading-relaxed"></textarea>
+          <button onclick="importChallengeCode()" class="mt-2.5 w-full bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-3 rounded-xl text-xs tracking-wider uppercase cursor-pointer flex items-center justify-center gap-1.5 border-0">
+            Importar Código e Jogar!
+          </button>
+        </div>
+
+        <button onclick="changeScreen('HOME')" class="mt-4 w-full text-slate-400 hover:text-white font-bold text-xs uppercase tracking-wider py-1 cursor-pointer bg-transparent border-0">
+          Voltar ao Menu
+        </button>
+      </div>
+
+      <!-- TELA DE COIN FLIP -->
+      <div id="screen-coin-flip" class="w-full max-w-md mx-auto bg-slate-900/90 border-2 border-yellow-500/30 rounded-3xl p-6 shadow-2xl relative overflow-hidden hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-green-950/20 via-slate-950 to-yellow-600/5 pointer-events-none"></div>
+        <div class="text-center relative z-10">
+          <div class="inline-block bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-bold px-3 py-1 rounded-full text-xs tracking-wider uppercase mb-3">
+            Sorteio Inicial de Campo
+          </div>
+          <h3 class="text-xl sm:text-2xl font-black text-slate-100 tracking-tight">Cara ou Coroa da Copa 🪙</h3>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-xs mx-auto">
+            Ao lançar a moeda de ouro, quem acertar o lado começa o jogo com o primeiro lance no Blackjack!
+          </p>
+
+          <!-- Selection phase -->
+          <div id="coin-selection-container" class="mt-6">
+            <p class="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3">Escolha seu lado:</p>
+            <div class="grid grid-cols-2 gap-3">
+              <button id="coin-btn-cara" onclick="selectCoinSide('cara')" class="py-4 rounded-xl border-2 bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700/85 flex flex-col items-center gap-1.5 transition-all cursor-pointer">
+                <span class="text-3xl filter drop-shadow">⚽</span>
+                <span class="text-xs font-extrabold uppercase tracking-wide">CARA (BOLA)</span>
+              </button>
+              <button id="coin-btn-coroa" onclick="selectCoinSide('coroa')" class="py-4 rounded-xl border-2 bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700/85 flex flex-col items-center gap-1.5 transition-all cursor-pointer">
+                <span class="text-3xl filter drop-shadow">🏆</span>
+                <span class="text-xs font-extrabold uppercase tracking-wide">COROA (TAÇA)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Spinner representation -->
+          <div class="my-8 flex justify-center items-center h-32 relative">
+            <div class="absolute inset-0 bg-yellow-400/5 rounded-full blur-2xl pointer-events-none"></div>
+            <div id="coin-rotor" class="w-[110px] h-[110px] rounded-full relative style-3d select-none transition-transform duration-500" style="transform-style: preserve-3d">
+              <!-- CARA (Heads) -->
+              <div class="absolute inset-0 bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 rounded-full border-4 border-yellow-200 flex flex-col items-center justify-center shadow-xl shadow-black/80 font-sans cursor-default" style="backface-visibility: hidden">
+                <span class="text-4xl filter drop-shadow">⚽</span>
+                <span class="text-[9px] font-black text-slate-950 tracking-widest uppercase mt-1">BOLA</span>
+              </div>
+              <!-- COROA (Tails) -->
+              <div class="absolute inset-0 bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 rounded-full border-4 border-yellow-200 flex flex-col items-center justify-center shadow-xl shadow-black/80 font-sans cursor-default" style="backface-visibility: hidden; transform: rotateY(180deg)">
+                <span class="text-4xl filter drop-shadow">🏆</span>
+                <span class="text-[9px] font-black text-slate-950 tracking-widest uppercase mt-1">TAÇA</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <button id="coin-spin-btn" onclick="spinCoin()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 font-extrabold py-3.5 rounded-xl text-slate-950 tracking-wide text-sm border-b-4 border-emerald-800 shadow-lg shadow-emerald-500/10 active:scale-95 cursor-pointer border-0 hidden">
+            GIRAR MOEDA DE OURO 🪙
+          </button>
+
+          <p id="coin-status-msg" class="text-slate-500 text-[11px] font-mono mt-2">
+            ⚠️ Selecione acima (BOLA) ou (TAÇA) para poder girar
+          </p>
+
+          <!-- Result banner -->
+          <div id="coin-result-box" class="mt-2 text-center hidden">
+            <div class="bg-slate-950/80 p-4 border border-yellow-400/20 rounded-2xl">
+              <div class="flex justify-center mb-1">
+                <span id="coin-winner-emoji" class="text-3xl animate-bounce">⚽ DEU CARA!</span>
+              </div>
+              <h4 id="coin-winner-title" class="text-lg font-black mt-2 text-green-400">VOCÊ VENCEU O SORTEIO!</h4>
+              <p id="coin-winner-subtitle" class="text-xs text-slate-400 mt-1">Você dará o pontapé inicial!</p>
+            </div>
+            <button onclick="goToMatch()" class="mt-5 w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black py-4 rounded-xl text-xs sm:text-sm tracking-widest border-b-4 border-amber-700 shadow-xl shadow-yellow-500/20 cursor-pointer uppercase border-0">
+              Ir Para a Partida ⚽ START!
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TELA DE PARTIDA -->
+      <div id="screen-game" class="w-full flex flex-col items-center hidden">
+        <!-- Scoreboard -->
+        <div class="w-full max-w-md bg-gradient-to-r from-emerald-950/90 via-slate-950/90 to-emerald-950/90 border border-yellow-500/30 rounded-2xl p-3 shadow-xl mb-4 flex items-center justify-between text-center select-none">
+          <div class="flex-1">
+            <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">VOCÊ</div>
+            <div id="score-player" class="text-3xl font-black text-white">0</div>
+          </div>
+          <div class="bg-yellow-400/10 border border-yellow-400/30 px-3 py-1 rounded-lg">
+            <span id="score-opponent-lbl" class="text-xs font-extrabold text-yellow-400 uppercase tracking-widest">CPU</span>
+            <p class="text-[9px] font-mono text-slate-400">PLACAR DA COPA</p>
+          </div>
+          <div class="flex-1">
+            <div id="score-opponent-title" class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">COMPUTADOR</div>
+            <div id="score-opponent" class="text-3xl font-black text-white">0</div>
+          </div>
+        </div>
+
+        <!-- Turn indicators -->
+        <div class="mb-4">
+          <span id="game-turn-badge" class="bg-emerald-500 text-slate-950 font-extrabold px-3 py-1 rounded-full text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 animate-pulse">
+            ⚽ Seu lance! Ajuste sua escalação
+          </span>
+        </div>
+
+        <!-- RIVAL BOARD -->
+        <div class="w-full bg-slate-950/70 border border-slate-900 rounded-3xl p-4 mb-6 shadow-inner relative flex flex-col items-center">
+          <div class="absolute top-2 left-4 text-[10px] font-black tracking-widest text-slate-500 uppercase flex items-center gap-1">
+            <span>🛡️</span> <span id="opponent-board-title">Elenco do Rival</span>
+          </div>
+          <div class="absolute top-2 right-4 text-[10px] font-mono font-bold text-amber-500">
+            TOTAL: <span id="opponent-total-lbl">?</span> PTS
+          </div>
+          <!-- Cards grid -->
+          <div id="opponent-hand-grid" class="flex flex-wrap items-center justify-center gap-2.5 mt-5 min-h-[225px] w-full px-2"></div>
+        </div>
+
+        <!-- PLAYER BOARD -->
+        <div class="w-full bg-slate-950/70 border-2 border-emerald-500/15 rounded-3xl p-4 shadow-xl shadow-emerald-900/5 relative flex flex-col items-center">
+          <div class="absolute top-2 left-4 text-[10px] font-black tracking-widest text-[#22C55E] uppercase flex items-center gap-1">
+            <span>🏃</span> Seu Elenco Ativo
+          </div>
+          <div class="absolute top-2 right-4 text-xs font-mono font-bold text-yellow-400">
+            PONTOS: <span id="player-total-lbl" class="bg-yellow-400 text-slate-950 px-1.5 py-0.5 rounded font-black text-sm">0</span> / 21
+          </div>
+          <!-- Cards grid -->
+          <div id="player-hand-grid" class="flex flex-wrap items-center justify-center gap-2.5 mt-5 min-h-[225px] w-full px-2"></div>
+        </div>
+
+        <!-- CONTROLS CONTAINER -->
+        <div class="mt-6 w-full max-w-md px-4 relative z-30">
+          <!-- Draft Selection active state or Stand/Hit buttons -->
+          <div id="game-controls-box"></div>
+        </div>
+      </div>
+
+      <!-- TELA FINAL -->
+      <div id="screen-end" class="text-center max-w-md mx-auto bg-slate-900 border-2 border-yellow-400/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative hidden">
+        <div class="flex justify-center mb-1.5">
+          <div class="w-16 h-16 rounded-full bg-yellow-400/10 flex items-center justify-center">
+            <span class="text-3xl animate-bounce">🏆</span>
+          </div>
+        </div>
+        <h2 class="text-3xl font-black italic tracking-tighter text-yellow-400 uppercase leading-none">APITO FINAL!</h2>
+        <p class="text-xs text-slate-500 uppercase tracking-widest font-mono">Fim de Partida</p>
+
+        <div class="my-6 bg-slate-950 py-4 px-6 rounded-2xl border border-slate-800 flex items-center justify-around">
+          <div>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wide">VOCÊ</p>
+            <p id="end-score-player" class="text-3xl font-black text-white">0</p>
+          </div>
+          <div class="text-xl font-bold font-mono text-yellow-400/40">X</div>
+          <div>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wide">ADVERSÁRIO</p>
+            <p id="end-score-opponent" class="text-3xl font-black text-white">0</p>
+          </div>
+        </div>
+
+        <h3 id="end-winner-announcement" class="text-xl font-black text-green-400">🏆 CAMPEÃO DO MUNDO!</h3>
+        <p id="end-winner-description" class="text-xs text-slate-400 mt-2">
+          Seu time jogou um futebol de elite, goleando as cartas do oponente!
+        </p>
+
+        <div class="mt-8 space-y-2">
+          <button onclick="restartMatch()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 text-slate-950 font-black py-4 rounded-xl text-xs sm:text-sm tracking-wider uppercase cursor-pointer border-0">
+            ⚽ Jogar Novamente!
+          </button>
+          <button onclick="changeScreen('HOME')" class="w-full bg-slate-950 hover:bg-slate-850 border border-slate-800 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase cursor-pointer">
+            Voltar à Tela de Entrada
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-5xl mx-auto px-4 mt-auto text-center relative z-20">
+      <p class="text-[9px] text-slate-500/80 font-mono tracking-widest uppercase">
+        Black Jack Copa Do Mundo de Futebol 2026 • Versão Premium 🥇
+      </p>
+    </footer>
+
+    <!-- Game script of rules & procedural logic -->
+    <script>
+      // ALL PLAYERS DATABASE DEFINITION
+      const ALL_PLAYERS = [
+        { id: "pele", name: "Pelé", country: "Brasil", countryFlag: "🇧🇷", position: "ATA", blackjackValue: 11, isGold: true, legendBio: "O Rei do Futebol, 3 Copas do Mundo, o maior de todos os tempos.", rating: 99 },
+        { id: "ronaldo", name: "Ronaldo Fenômeno", country: "Brasil", countryFlag: "🇧🇷", position: "ATA", blackjackValue: 11, isGold: true, legendBio: "Artilheiro implacável do Penta nacional em 2002.", rating: 97 },
+        { id: "messi", name: "Lionel Messi", country: "Argentina", countryFlag: "🇦🇷", position: "ATA", blackjackValue: 11, isGold: true, legendBio: "Campeão mundial de 2022 e vencedor de 8 Bolas de Ouro.", rating: 98 },
+        { id: "cr7", name: "Cristiano Ronaldo", country: "Portugal", countryFlag: "🇵🇹", position: "ATA", blackjackValue: 11, isGold: true, legendBio: "O maior artilheiro da história das seleções e recordista de gols.", rating: 98 },
+        { id: "maradona", name: "Diego Maradona", country: "Argentina", countryFlag: "🇦🇷", position: "MEI", blackjackValue: 11, isGold: true, legendBio: "Símbolo histórico da conquista de 1986 na Copa do México.", rating: 97 },
+        { id: "mbappe", name: "Mbappé", country: "França", countryFlag: "🇫🇷", position: "ATA", blackjackValue: 10, isGold: false, rating: 94 },
+        { id: "vinijr", name: "Vini Jr.", country: "Brasil", countryFlag: "🇧🇷", position: "ATA", blackjackValue: 9, isGold: false, rating: 93 },
+        { id: "bellingham", name: "Bellingham", country: "Inglaterra", countryFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", position: "MEI", blackjackValue: 8, isGold: false, rating: 91 },
+        { id: "haaland", name: "Haaland", country: "Noruega", countryFlag: "🇳🇴", position: "ATA", blackjackValue: 10, isGold: false, rating: 92 },
+        { id: "rodri", name: "Rodri", country: "Espanha", countryFlag: "🇪🇸", position: "MEI", blackjackValue: 7, isGold: false, rating: 91 },
+        { id: "vandijk", name: "Van Dijk", country: "Holanda", countryFlag: "🇳🇱", position: "DEF", blackjackValue: 7, isGold: false, rating: 90 },
+        { id: "kane", name: "Harry Kane", country: "Inglaterra", countryFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", position: "ATA", blackjackValue: 8, isGold: false, rating: 89 },
+        { id: "salah", name: "Salah", country: "Egito", countryFlag: "🇪🇬", position: "ATA", blackjackValue: 8, isGold: false, rating: 90 },
+        { id: "modric", name: "Modrić", country: "Croácia", countryFlag: "🇭🇷", position: "MEI", blackjackValue: 7, isGold: false, rating: 88 },
+        { id: "pedri", name: "Pedri", country: "Espanha", countryFlag: "🇪🇸", position: "MEI", blackjackValue: 5, isGold: false, rating: 86 },
+        { id: "rubendias", name: "Rúben Dias", country: "Portugal", countryFlag: "🇵🇹", position: "DEF", blackjackValue: 4, isGold: false, rating: 87 },
+        { id: "maignan", name: "Maignan", country: "França", countryFlag: "🇫🇷", position: "GOL", blackjackValue: 3, isGold: false, rating: 85 }
+      ];
+
+      // Procedural audio context synthesizer object
+      let audioCtx = null;
+      function getAudioContext() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return audioCtx;
+      }
+
+      const sounds = {
+        playCoin: () => {
+          if (state.isMuted) return;
+          try {
+            const ctx = getAudioContext();
+            const t = ctx.currentTime;
+            const osc1 = ctx.createOscillator();
+            const osc2 = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc1.type = 'sine'; osc1.frequency.setValueAtTime(1400, t);
+            osc1.frequency.exponentialRampToValueAtTime(1800, t + 0.15);
+            osc2.type = 'sine'; osc2.frequency.setValueAtTime(2200, t);
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+            osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
+            osc1.start(t); osc2.start(t); osc1.stop(t + 0.45); osc2.stop(t + 0.45);
+          } catch(e){}
+        },
+        playCardDraw: () => {
+          if (state.isMuted) return;
+          try {
+            const ctx = getAudioContext();
+            const t = ctx.currentTime;
+            const duration = 0.2;
+            const bufferSize = ctx.sampleRate * duration;
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = ctx.createBufferSource(); noise.buffer = buffer;
+            const filter = ctx.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.setValueAtTime(1200, t);
+            const gain = ctx.createGain(); gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.06, t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+            noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+            noise.start(t); noise.stop(t + duration);
+          } catch(e){}
+        },
+        playCrowdCheer: () => {
+          if (state.isMuted) return;
+          try {
+            const ctx = getAudioContext();
+            const t = ctx.currentTime;
+            const dur = 2.0;
+            const bufferSize = ctx.sampleRate * dur;
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = ctx.createBufferSource(); noise.buffer = buffer;
+            const filter = ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.setValueAtTime(500, t);
+            const gain = ctx.createGain(); gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.2, t + 0.25);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+            noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+            noise.start(t); noise.stop(t + dur);
+          } catch(e){}
+        },
+        playCrowdOoh: () => {
+          if (state.isMuted) return;
+          try {
+            const ctx = getAudioContext();
+            const t = ctx.currentTime;
+            const dur = 1.0;
+            const bufferSize = ctx.sampleRate * dur;
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = ctx.createBufferSource(); noise.buffer = buffer;
+            const filter = ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.setValueAtTime(320, t);
+            const gain = ctx.createGain(); gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.15, t + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+            noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+            noise.start(t); noise.stop(t + dur);
+          } catch(e){}
+        },
+        playRefereeWhistle: () => {
+          if (state.isMuted) return;
+          try {
+            const ctx = getAudioContext();
+            const t = ctx.currentTime;
+            const whistleBlow = (delay) => {
+              const ct = t + delay;
+              const osc1 = ctx.createOscillator();
+              const osc2 = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc1.frequency.setValueAtTime(2500, ct);
+              osc2.frequency.setValueAtTime(2560, ct);
+              const lfo = ctx.createOscillator();
+              const lfoGain = ctx.createGain();
+              lfo.frequency.setValueAtTime(55, ct);
+              lfoGain.gain.setValueAtTime(100, ct);
+              lfo.connect(lfoGain); lfoGain.connect(osc1.frequency); lfoGain.connect(osc2.frequency);
+              gain.gain.setValueAtTime(0, ct);
+              gain.gain.linearRampToValueAtTime(0.2, ct + 0.015);
+              gain.gain.exponentialRampToValueAtTime(0.001, ct + 0.25);
+              osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
+              lfo.start(ct); osc1.start(ct); osc2.start(ct);
+              lfo.stop(ct + 0.26); osc1.stop(ct + 0.26); osc2.stop(ct + 0.26);
+            };
+            whistleBlow(0);
+            whistleBlow(0.25);
+          } catch(e){}
+        }
+      };
+
+      // GAME GLOBAL STATE
+      let state = {
+        screen: 'HOME',
+        mode: 'CPU', // 'CPU', 'MP_LOCAL', 'MP_WHATSAPP'
+        isMuted: false,
+        playerDeck: [],
+        opponentDeck: [],
+        playerHand: [],
+        opponentHand: [],
+        playerScore: 0,
+        opponentScore: 0,
+        coinWinner: null, // 'player' | 'opponent'
+        activeTurn: null, // 'player' | 'opponent'
+        isRevealed: false,
+        mpPhase: 'YOUR_TURN', // 'YOUR_TURN', 'WAITING_TURN'
+        goldCardToAssign: null, // { card, handIndex, target }
+        draftState: null, // 'P1_C1', 'P2_C1', 'P1_C2', 'P2_C2', 'PLAY_PHASE'
+        startingPlayer: 'player',
+        coinSelectedChoice: null,
+        isCoinSpinning: false
+      };
+
+      // Helper to generate a unique ID
+      const getUniqueId = () => Math.random().toString(36).substring(2, 9);
+
+      // Simple alert helper
+      function showBanner(msg, duration = 3000) {
+        clearTimeout(state.bannerTimeout);
+        const banner = document.getElementById('instruction-banner');
+        const txt = document.getElementById('instruction-message');
+        txt.innerText = msg;
+        banner.classList.remove('opacity-0', '-translate-y-10');
+        banner.classList.add('opacity-100', 'translate-y-0');
+        state.bannerTimeout = setTimeout(() => {
+          banner.classList.remove('opacity-100', 'translate-y-0');
+          banner.classList.add('opacity-0', '-translate-y-10');
+        }, duration);
+      }
+
+      function toggleMute() {
+        state.isMuted = !state.isMuted;
+        const iconOn = document.getElementById('icon-sound-on');
+        const statusText = document.getElementById('sound-status-text');
+        const antenna = document.getElementById('sound-antenna');
+        const bars = document.querySelectorAll('.visualizer-bar');
+        
+        if (state.isMuted) {
+          iconOn.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6L4.5 9H3a1 1 0 00-1 1v4a1 1 0 001 1h1.5l4.72 4.72c.3.3.78.08.78-.34V5.62c0-.42-.48-.64-.78-.34L7.5 8.25z" />`;
+          iconOn.classList.add('text-rose-500');
+          iconOn.classList.remove('text-emerald-400');
+          statusText.innerText = 'MUDO';
+          antenna.classList.remove('text-emerald-400', 'animate-pulse');
+          antenna.classList.add('text-slate-500');
+          bars.forEach(b => b.style.animation = 'none');
+        } else {
+          iconOn.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.5l4.72-4.72c.3-.3.78-.08.78.34v13.76c0 .42-.48.64-.78.34L5.586 15z" />`;
+          iconOn.classList.remove('text-rose-500');
+          iconOn.classList.add('text-emerald-400');
+          statusText.innerText = 'ÁUDIO ATIVO';
+          antenna.classList.add('text-emerald-400', 'animate-pulse');
+          antenna.classList.remove('text-slate-500');
+          bars.forEach(b => b.style.animation = 'bounce-bar 0.5s ease-in-out infinite alternate');
+          sounds.playRefereeWhistle();
+        }
+      }
+
+      function toggleHowToPlay(show) {
+        sounds.playCardDraw();
+        const modal = document.getElementById('rules-modal');
+        if (show) {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        } else {
+          modal.classList.remove('flex');
+          modal.classList.add('hidden');
+        }
+      }
+
+      // Router controller
+      function changeScreen(screenName) {
+        state.screen = screenName;
+        const screens = ['screen-home', 'screen-mp-menu', 'screen-coin-flip', 'screen-game', 'screen-end'];
+        screens.forEach(s => {
+          document.getElementById(s).classList.add('hidden');
+        });
+        document.getElementById(`screen-${screenName.toLowerCase().replace('_', '-')}`).classList.remove('hidden');
+      }
+
+      // START MODES ACTIONS
+      function startGameMode(modeName) {
+        state.mode = modeName;
+        state.playerScore = 0;
+        state.opponentScore = 0;
+        state.coinWinner = null;
+        state.activeTurn = null;
+        sounds.playRefereeWhistle();
+        
+        if (modeName === 'CPU') {
+          showBanner("Sorteio inicial valendo pontapé de saída!");
+          initCoinFlipScreen();
+        } else if (modeName === 'MP_LOCAL') {
+          showBanner("Passa e Joga modo local inicializado!");
+          initCoinFlipScreen();
+        } else if (modeName === 'MP_WHATSAPP') {
+          showBanner("Gire para decidir os lances do desafio!");
+          initCoinFlipScreen();
+        }
+      }
+
+      // COIN FLIP SCREEN ENGINE
+      function initCoinFlipScreen() {
+        state.coinSelectedChoice = null;
+        state.isCoinSpinning = false;
+        document.getElementById('coin-selection-container').classList.remove('hidden');
+        document.getElementById('coin-spin-btn').classList.add('hidden');
+        document.getElementById('coin-result-box').classList.add('hidden');
+        document.getElementById('coin-status-msg').classList.remove('hidden');
+        document.getElementById('coin-btn-cara').className = "py-4 rounded-xl border-2 bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700/85 flex flex-col items-center gap-1.5 transition-all cursor-pointer";
+        document.getElementById('coin-btn-coroa').className = "py-4 rounded-xl border-2 bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700/85 flex flex-col items-center gap-1.5 transition-all cursor-pointer";
+        document.getElementById('coin-rotor').style.transform = 'rotateY(0deg)';
+        changeScreen('COIN_FLIP');
+      }
+
+      function selectCoinSide(side) {
+        state.coinSelectedChoice = side;
+        sounds.playCardDraw();
+        const btnCara = document.getElementById('coin-btn-cara');
+        const btnCoroa = document.getElementById('coin-btn-coroa');
+        if (side === 'cara') {
+          btnCara.className = "py-4 rounded-xl border-2 bg-yellow-400/10 border-yellow-400 text-yellow-400 shadow-lg flex flex-col items-center gap-1.5 transition-all cursor-pointer";
+          btnCoroa.className = "py-4 rounded-xl border-2 bg-slate-950/40 border-slate-800 text-slate-400 flex flex-col items-center gap-1.5 cursor-pointer";
+        } else {
+          btnCoroa.className = "py-4 rounded-xl border-2 bg-yellow-400/10 border-yellow-400 text-yellow-400 shadow-lg flex flex-col items-center gap-1.5 transition-all cursor-pointer";
+          btnCara.className = "py-4 rounded-xl border-2 bg-slate-950/40 border-slate-800 text-slate-400 flex flex-col items-center gap-1.5 cursor-pointer";
+        }
+        document.getElementById('coin-spin-btn').classList.remove('hidden');
+        document.getElementById('coin-status-msg').classList.add('hidden');
+      }
+
+      function spinCoin() {
+        if (state.isCoinSpinning || !state.coinSelectedChoice) return;
+        state.isCoinSpinning = true;
+        document.getElementById('coin-spin-btn').classList.add('hidden');
+        document.getElementById('coin-selection-container').classList.add('hidden');
+        
+        sounds.playCoin();
+        setTimeout(() => sounds.playCoin(), 650);
+        setTimeout(() => sounds.playCoin(), 1300);
+
+        const resultOptions = ['cara', 'coroa'];
+        const outcome = resultOptions[Math.floor(Math.random() * 2)];
+        const rotor = document.getElementById('coin-rotor');
+
+        rotor.className = "w-[110px] h-[110px] rounded-full relative style-3d select-none";
+        if (outcome === 'cara') {
+          rotor.classList.add('animate-coin-heads');
+        } else {
+          rotor.classList.add('animate-coin-tails');
+        }
+
+        setTimeout(() => {
+          rotor.className = "w-[110px] h-[110px] rounded-full relative style-3d select-none";
+          rotor.style.transform = outcome === 'coroa' ? 'rotateY(180deg)' : 'rotateY(0deg)';
+          
+          const isPlayerWinner = state.coinSelectedChoice === outcome;
+          const winnerRole = isPlayerWinner ? 'player' : 'opponent';
+          state.coinWinner = winnerRole;
+          state.activeTurn = winnerRole;
+          state.isCoinSpinning = false;
+
+          document.getElementById('coin-winner-emoji').innerText = outcome === 'cara' ? '⚽ DEU CARA (BOLA)!' : '🏆 DEU COROA (TAÇA)!';
+          
+          const textTitle = document.getElementById('coin-winner-title');
+          const textSub = document.getElementById('coin-winner-subtitle');
+          if (isPlayerWinner) {
+            textTitle.innerText = "VOCÊ VENCEU O SORTEIO!";
+            textTitle.className = "text-lg font-black mt-2 text-green-400";
+            textSub.innerText = "Sua escalação dará o pontapé de saída nesta Copa!";
+            sounds.playCrowdCheer();
+            sounds.playRefereeWhistle();
+          } else {
+            textTitle.innerText = "ADVERSÁRIO VENCEU O SORTEIO!";
+            textTitle.className = "text-lg font-black mt-2 text-amber-500";
+            textSub.innerText = "O rival dará o pontapé de saída no campo de ataque!";
+            sounds.playCrowdOoh();
+          }
+
+          document.getElementById('coin-result-box').classList.remove('hidden');
+        }, 2400);
+      }
+
+      function goToMatch() {
+        sounds.playRefereeWhistle();
+        startHand(state.coinWinner);
+      }
+
+      // PREPARE HANDS & DECKS
+      function cardShuffler() {
+        return [...ALL_PLAYERS].sort(() => Math.random() - 0.5);
+      }
+
+      function startHand(startingPlayer) {
+        state.playerDeck = cardShuffler();
+        state.opponentDeck = cardShuffler();
+        state.playerHand = [];
+        state.opponentHand = [];
+        state.isRevealed = false;
+        state.mpPhase = 'YOUR_TURN';
+        state.startingPlayer = startingPlayer;
+        state.draftState = 'P1_C1';
+        state.activeTurn = startingPlayer;
+
+        // Header layouts setup
+        const isCpu = state.mode === 'CPU';
+        document.getElementById('score-opponent-lbl').innerText = isCpu ? 'CPU' : 'AMIGO';
+        document.getElementById('score-opponent-title').innerText = isCpu ? 'COMPUTADOR' : 'DESAFIANTE';
+        document.getElementById('opponent-board-title').innerText = isCpu ? 'Elenco da CPU' : 'Elenco do Amigo';
+
+        changeScreen('GAME');
+        updateInterface();
+
+        if (startingPlayer === 'player') {
+          showBanner("Seu lance inicial! Escolha seu primeiro jogador para começar.");
+        } else {
+          showBanner(isCpu ? "CPU faz o primeiro lance da bola..." : "Amigo se prepara para o primeiro lance!");
+          if (isCpu) {
+            setTimeout(() => handleDraftDraw('opponent'), 1500);
+          }
+        }
+      }
+
+      // CARD COLOR KITS HELPERS
+      function getKitColors(country) {
+        const norm = country.toLowerCase();
+        if (norm.includes('brasil')) return { p: '#EAB308', s: '#16A34A', text: '#1E3A8A' };
+        if (norm.includes('argentina')) return { p: '#38BDF8', s: '#FFFFFF', text: '#1E293B' };
+        if (norm.includes('portugal')) return { p: '#DC2626', s: '#16A34A', text: '#FEF08A' };
+        if (norm.includes('frança')) return { p: '#1D4ED8', s: '#FFFFFF', text: '#E11D48' };
+        if (norm.includes('inglaterra')) return { p: '#F8FAFC', s: '#1E3A8A', text: '#E11D48' };
+        if (norm.includes('noruega')) return { p: '#E11D48', s: '#1D4ED8', text: '#FFFFFF' };
+        if (norm.includes('espanha')) return { p: '#DC2626', s: '#EAB308', text: '#FFFFFF' };
+        if (norm.includes('holanda')) return { p: '#F97316', s: '#FFFFFF', text: '#1E293B' };
+        if (norm.includes('croácia')) return { p: '#EA580C', s: '#FFFFFF', text: '#1E293B' };
+        if (norm.includes('egito')) return { p: '#991B1B', s: '#000000', text: '#FFFFFF' };
+        return { p: '#475569', s: '#94A3B8', text: '#FFFFFF' };
+      }
+
+      // COMPONENT RENDERER - SOCCER CARD
+      function createCardHtml(card, assignedValue, showFront) {
+        if (!showFront) {
+          return `
+            <div class="w-[135px] h-[225px] sm:w-[150px] sm:h-[245px] rounded-xl border-3 border-yellow-400 bg-gradient-to-br from-slate-950 via-green-950 to-emerald-900 shadow-xl shadow-black/80 flex flex-col items-center justify-between p-3 relative overflow-hidden select-none">
+              <div class="absolute inset-0 bg-yellow-400/5 pointer-events-none"></div>
+              <div class="absolute inset-x-0 top-1/2 h-[1px] bg-yellow-400/20"></div>
+              <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full border border-yellow-400/25"></div>
+              <div class="text-[10px] font-mono font-bold tracking-widest text-yellow-400/60 uppercase">COPA 2026</div>
+              <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-slate-900/90 border border-yellow-400/40 flex items-center justify-center shadow-inner z-10 animate-pulse">
+                <span class="text-3xl text-yellow-400">🏆</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 z-10">
+                <span class="text-[11px] font-extrabold tracking-wider text-green-400">BLACK JACK</span>
+                <span class="text-[9px] text-yellow-100">⚽⭐️⚽</span>
+              </div>
+            </div>
+          `;
+        }
+
+        const kit = getKitColors(card.country);
+        const displayVal = assignedValue !== undefined ? assignedValue : card.blackjackValue;
+        const imgUrl = `https://raw.githubusercontent.com/davidaosp-creator/copa2026-super-trunfo/main/app/src/main/res/drawable/img_card_${card.id}.png`;
+        
+        let headerStyles = card.isGold
+          ? 'bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 border-2.5 border-yellow-200'
+          : 'bg-slate-900 border border-emerald-500/40';
+
+        const shirtNumber = card.position === 'ATA' ? '9' : card.position === 'MEI' ? '10' : card.position === 'DEF' ? '4' : '1';
+
+        return `
+          <div class="w-[135px] h-[225px] sm:w-[150px] sm:h-[245px] rounded-xl flex flex-col justify-between p-2 relative overflow-hidden select-none shadow-lg transition-transform hover:-translate-y-1.5 duration-350 ${headerStyles}">
+            <div class="absolute -inset-y-4 -inset-x-12 rotate-45 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"></div>
+            
+            <div class="flex items-center justify-between text-xs font-bold leading-none z-10">
+              <div class="flex flex-col items-center">
+                <span class="text-[13px] font-extrabold ${card.isGold ? 'text-slate-950' : 'text-slate-100'}">${card.rating}</span>
+                <span class="text-[8px] uppercase tracking-wider font-semibold ${card.isGold ? 'text-slate-900/70' : 'text-emerald-400'}">${card.position}</span>
+              </div>
+              <div class="flex items-center gap-1 bg-black/25 px-1.5 py-0.5 rounded-md">
+                <span class="text-xs">${card.countryFlag}</span>
+                <span class="text-[8px] font-mono ${card.isGold ? 'text-yellow-105' : 'text-slate-400'}">${card.id.substring(0, 3).toUpperCase()}</span>
+              </div>
+            </div>
+
+            <div class="mt-1 flex-grow h-[115px] relative bg-slate-950/95 rounded-lg overflow-hidden flex flex-col items-center justify-center border border-slate-800 shadow-inner">
+              <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/40 to-slate-950 pointer-events-none"></div>
+              
+              <!-- Real Player image failback to customized SVG football uniform -->
+              <img src="${imgUrl}" alt="${card.name}" class="absolute inset-0 w-full h-full object-cover z-10" onerror="this.style.display='none'; document.getElementById('jersey-fallback-${card.id}').classList.remove('hidden')" />
+
+              <!-- Beautiful Soccer Jersey Badge -->
+              <div id="jersey-fallback-${card.id}" class="relative w-11 h-11 flex items-center justify-center z-5 hidden">
+                <svg viewBox="0 0 100 100" class="w-12 h-12 drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]">
+                  <path d="M 15 25 L 30 15 L 38 27 L 27 38 Z" fill="${kit.p}" stroke="${kit.s}" stroke-width="3" />
+                  <path d="M 85 25 L 70 15 L 62 27 L 73 38 Z" fill="${kit.p}" stroke="${kit.s}" stroke-width="3" />
+                  <path d="M 30 15 L 70 15 L 75 80 L 25 80 Z" fill="${kit.p}" stroke="${kit.s}" stroke-width="3" />
+                  <path d="M 40 15 A 10 10 0 0 0 60 15" fill="${kit.s}" />
+                  <rect x="46" y="20" width="8" height="60" fill="${kit.s}" opacity="0.6" />
+                </svg>
+                <span class="absolute top-[15px] text-[10px] font-black pointer-events-none" style="color: ${kit.text}">${shirtNumber}</span>
+              </div>
+
+              <!-- Blackjack details points card bottom right bubble -->
+              <div class="absolute -bottom-1 -right-1 bg-yellow-400 border-2 border-slate-950 text-slate-950 font-black rounded-full w-9 h-9 flex items-center justify-center text-xs shadow-md z-20">
+                <span class="text-[9px] uppercase font-mono mr-0.5">PTS</span>
+                <span class="text-sm font-extrabold">${displayVal}</span>
+              </div>
+            </div>
+
+            <!-- Card Bottom Bio Label -->
+            <div class="mt-1.5 z-10 flex flex-col">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black uppercase tracking-tight truncate max-w-[90px] ${card.isGold ? 'text-slate-950' : 'text-slate-100'}">${card.name}</span>
+                ${card.isGold ? '<span class="text-xs text-slate-950 font-bold shrink-0">★</span>' : ''}
+              </div>
+              <p class="text-[7.5px] leading-tight text-slate-400 mt-0.5 truncate overflow-hidden ${card.isGold ? 'text-slate-900/80 italic font-semibold' : ''}">
+                ${card.isGold ? card.legendBio : `${card.country} • ${card.position}`}
+              </p>
+            </div>
+
+            <div class="mt-1 flex items-center justify-between text-[7px] border-t pt-1 ${card.isGold ? 'border-slate-950/20 text-slate-950' : 'border-slate-800 text-slate-500'}">
+              <span class="font-bold tracking-widest uppercase">${card.isGold ? 'Lenda ★' : 'Seleção'}</span>
+              <span class="font-mono">#${card.id.substring(0, 3).padEnd(3,'0').toUpperCase()}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // CALCULATE SCORES
+      function getHandScore(hand) {
+        return hand.reduce((total, item) => total + item.assignedValue, 0);
+      }
+
+      // ADVANCE DRAFT PHASES
+      function advanceDraft() {
+        const p1 = state.startingPlayer;
+        const p2 = state.startingPlayer === 'player' ? 'opponent' : 'player';
+
+        if (state.draftState === 'P1_C1') {
+          state.draftState = 'P2_C1';
+          state.activeTurn = p2;
+          if (p2 === 'opponent' && state.mode === 'CPU') {
+            showBanner("CPU escolhendo primeiro reforço...");
+            setTimeout(() => handleDraftDraw('opponent'), 1500);
+          } else {
+            showBanner(state.mode.includes('MP') ? "Vez do rival escolher seu 1º jogador!" : "Agora a CPU se mobiliza!");
+          }
+        } 
+        else if (state.draftState === 'P2_C1') {
+          state.draftState = 'P1_C2';
+          state.activeTurn = p1;
+          if (p1 === 'opponent' && state.mode === 'CPU') {
+            showBanner("CPU selecionando segundo jogador...");
+            setTimeout(() => handleDraftDraw('opponent'), 1500);
+          } else {
+            showBanner(state.mode.includes('MP') ? "Vez do rival escolher seu 2º jogador!" : "Rival escolheu! Selecione o seu segundo craque.");
+          }
+        } 
+        else if (state.draftState === 'P1_C2') {
+          state.draftState = 'P2_C2';
+          state.activeTurn = p2;
+          if (p2 === 'opponent' && state.mode === 'CPU') {
+            showBanner("CPU escalando o último reforço...");
+            setTimeout(() => handleDraftDraw('opponent'), 1500);
+          } else {
+            showBanner("Sua vez de fechar os reforços iniciais!");
+          }
+        } 
+        else if (state.draftState === 'P2_C2') {
+          state.draftState = 'PLAY_PHASE';
+          state.activeTurn = p1;
+          
+          if (p1 === 'player') {
+            showBanner("Escalações fechadas! Puxe craque ou pare de campo.");
+          } else {
+            showBanner("Escalações fechadas! CPU inicia o ataque...");
+            if (state.mode === 'CPU') {
+              setTimeout(() => {
+                runCpuLogic();
+              }, 1500);
+            }
+          }
+        }
+        updateInterface();
+      }
+
+      // PROCESS DRAW ACTION
+      function handleDraftDraw(who) {
+        if (who === 'player') {
+          const card = state.playerDeck.shift();
+          if (!card) return;
+          sounds.playCardDraw();
+
+          const newItem = { id: getUniqueId(), card: card, assignedValue: card.blackjackValue };
+          state.playerHand.push(newItem);
+
+          if (card.isGold) {
+            state.goldCardToAssign = { card: card, handIndex: state.playerHand.length - 1, target: 'player' };
+            openGoldModal();
+            return;
+          }
+          advanceDraft();
+        } else {
+          const card = state.opponentDeck.shift();
+          if (!card) return;
+          sounds.playCardDraw();
+
+          // CPU auto picks 11 by default
+          const val = card.isGold ? 11 : card.blackjackValue;
+          const newItem = { id: getUniqueId(), card: card, assignedValue: val };
+          state.opponentHand.push(newItem);
+
+          advanceDraft();
+        }
+      }
+
+      // ASSIGN CUSTOM VALUE GOLDEN CARDS
+      function openGoldModal() {
+        if (!state.goldCardToAssign) return;
+        document.getElementById('gold-modal-title').innerText = `Valor de ${state.goldCardToAssign.card.name}`;
+        document.getElementById('gold-modal').classList.remove('hidden');
+        document.getElementById('gold-modal').classList.add('flex');
+      }
+
+      function assignGoldValue(val) {
+        if (!state.goldCardToAssign) return;
+        const { handIndex, target } = state.goldCardToAssign;
+        sounds.playCardDraw();
+
+        if (target === 'player') {
+          state.playerHand[handIndex].assignedValue = val;
+          document.getElementById('gold-modal').classList.remove('flex');
+          document.getElementById('gold-modal').classList.add('hidden');
+          state.goldCardToAssign = null;
+
+          if (state.draftState && state.draftState !== 'PLAY_PHASE') {
+            advanceDraft();
+          } else {
+            const total = getHandScore(state.playerHand);
+            if (total > 21) {
+              showBanner(`Estourou com ${total} pontos! Fim do seu lance.`);
+              sounds.playCrowdOoh();
+              setTimeout(() => handleStandAction(), 1000);
+            } else {
+              updateInterface();
+            }
+          }
+        }
+      }
+
+      // PLAYER PLAY PHASE ACTIONS
+      function executeHit() {
+        if (state.activeTurn !== 'player' || state.isRevealed) return;
+        const card = state.playerDeck.shift();
+        if (!card) {
+          showBanner("Fim do banco de reservas!");
+          return;
+        }
+
+        sounds.playCardDraw();
+        const newItem = { id: getUniqueId(), card: card, assignedValue: card.blackjackValue };
+        state.playerHand.push(newItem);
+
+        if (card.isGold) {
+          state.goldCardToAssign = { card: card, handIndex: state.playerHand.length - 1, target: 'player' };
+          openGoldModal();
+          return;
+        }
+
+        const total = getHandScore(state.playerHand);
+        if (total > 21) {
+          showBanner(`Bateu na trave! Estourou com ${total} pontos.`);
+          sounds.playCrowdOoh();
+          setTimeout(() => {
+            handleStandAction();
+          }, 1400);
+        } else {
+          showBanner(`Puxou ${card.name}. Copa total em ${total} pontos.`);
+          updateInterface();
+        }
+      }
+
+      function handleStandAction() {
+        if (state.isRevealed) return;
+
+        if (state.mode === 'CPU') {
+          state.isRevealed = true;
+          sounds.playRefereeWhistle();
+          showBanner("CPU controlando e agindo taticamente...");
+          updateInterface();
+
+          setTimeout(() => {
+            let cpuTotal = getHandScore(state.opponentHand);
+            const playerTotal = getHandScore(state.playerHand);
+            const playerBusted = playerTotal > 21;
+
+            const interval = setInterval(() => {
+              if (cpuTotal < 17 && !playerBusted && cpuTotal <= playerTotal) {
+                const nextC = state.opponentDeck.shift();
+                if (nextC) {
+                  sounds.playCardDraw();
+                  let assigned = nextC.blackjackValue;
+                  if (nextC.isGold) {
+                    assigned = (cpuTotal + 11 <= 21) ? 11 : 1;
+                  }
+                  state.opponentHand.push({ id: getUniqueId(), card: nextC, assignedValue: assigned });
+                  cpuTotal = getHandScore(state.opponentHand);
+                  updateInterface();
+                } else {
+                  clearInterval(interval);
+                  resolveMatchWinner(playerTotal, cpuTotal);
+                }
+              } else {
+                clearInterval(interval);
+                resolveMatchWinner(playerTotal, cpuTotal);
+              }
+            }, 850);
+          }, 850);
+
+        } else if (state.mode === 'MP_LOCAL') {
+          if (state.activeTurn === 'player') {
+            state.activeTurn = 'opponent';
+            showBanner("Passe o celular para o Amigo! É o lance adversário.");
+            updateInterface();
+          } else {
+            state.isRevealed = true;
+            resolveMatchWinner(getHandScore(state.playerHand), getHandScore(state.opponentHand));
+          }
+        } else if (state.mode === 'MP_WHATSAPP') {
+          state.mpPhase = 'WAITING_TURN';
+          showBanner("Movimentos terminados! Gere seu convite WhatsApp.");
+          updateInterface();
+        }
+      }
+
+      // LOCAL MP ACTIVE HIT FOR SECOND PLAYER
+      function executeRivalHit() {
+        if (state.activeTurn !== 'opponent' || state.isRevealed) return;
+        const card = state.opponentDeck.shift();
+        if (!card) return;
+
+        sounds.playCardDraw();
+        // CPU / Opponent golden card is 11 or 1 depending on threshold
+        let assigned = card.blackjackValue;
+        if (card.isGold) {
+          const curTotal = getHandScore(state.opponentHand);
+          assigned = (curTotal + 11 <= 21) ? 11 : 1;
+        }
+
+        state.opponentHand.push({ id: getUniqueId(), card: card, assignedValue: assigned });
+        
+        const total = getHandScore(state.opponentHand);
+        if (total > 21) {
+          showBanner(`Amigo chutou pra fora! Estourou com ${total} pontos.`);
+          sounds.playCrowdOoh();
+          setTimeout(() => handleStandAction(), 1400);
+        } else {
+          showBanner(`Amigo puxou ${card.name}. Placar parcial: ${total} pts.`);
+          updateInterface();
+        }
+      }
+
+      // CPU AI AUTO STRATEGY START LANCE
+      function runCpuLogic() {
+        let cpuTotal = getHandScore(state.opponentHand);
+        const interval = setInterval(() => {
+          if (cpuTotal < 17) {
+            const extra = state.opponentDeck.shift();
+            if (extra) {
+              sounds.playCardDraw();
+              let assigned = extra.blackjackValue;
+              if (extra.isGold) {
+                assigned = (cpuTotal + 11 <= 21) ? 11 : 1;
+              }
+              state.opponentHand.push({ id: getUniqueId(), card: extra, assignedValue: assigned });
+              cpuTotal = getHandScore(state.opponentHand);
+              updateInterface();
+            } else {
+              clearInterval(interval);
+              passToPlayerTurn();
+            }
+          } else {
+            clearInterval(interval);
+            passToPlayerTurn();
+          }
+        }, 850);
+      }
+
+      function passToPlayerTurn() {
+        state.activeTurn = 'player';
+        showBanner("A CPU parou o avanço! Seu lance para superar os pontos.");
+        updateInterface();
+      }
+
+      // RESOLVE GAME SCORES
+      function resolveMatchWinner(pTotal, oTotal) {
+        let handWinner;
+        if (pTotal > 21 && oTotal > 21) {
+          handWinner = pTotal < oTotal ? 'player' : 'opponent';
+        } else if (pTotal > 21) {
+          handWinner = 'opponent';
+        } else if (oTotal > 21) {
+          handWinner = 'player';
+        } else if (pTotal === oTotal) {
+          handWinner = 'empate';
+        } else {
+          handWinner = pTotal > oTotal ? 'player' : 'opponent';
+        }
+
+        let outcomeText = '';
+        if (handWinner === 'player') {
+          state.playerScore++;
+          sounds.playCrowdCheer();
+          outcomeText = `Você venceu a rodada! ⚽ (${pTotal} x ${oTotal})`;
+        } else if (handWinner === 'opponent') {
+          state.opponentScore++;
+          sounds.playCrowdOoh();
+          outcomeText = `Rival faturou a rodada! 🛡️ (${oTotal} x ${pTotal})`;
+        } else {
+          sounds.playCrowdCheer();
+          outcomeText = `Empate na grande área! 🥅 (${pTotal} x ${oTotal})`;
+        }
+
+        showBanner(outcomeText);
+
+        setTimeout(() => {
+          if (state.playerScore >= 2 || state.opponentScore >= 2) {
+            sounds.playRefereeWhistle();
+            openGameOverScreen();
+          } else {
+            showBanner("Aqueça as cartas! Iniciando próxima rodada...");
+            setTimeout(() => {
+              startHand(state.coinWinner || 'player');
+            }, 1200);
+          }
+        }, 2800);
+      }
+
+      // OPEN GAME OVER SCREEN
+      function openGameOverScreen() {
+        document.getElementById('end-score-player').innerText = state.playerScore;
+        document.getElementById('end-score-opponent').innerText = state.opponentScore;
+
+        const winAnnouncement = document.getElementById('end-winner-announcement');
+        const winDesc = document.getElementById('end-winner-description');
+
+        if (state.playerScore >= 2) {
+          winAnnouncement.innerText = "🏆 CAMPEÃO DO MUNDO!";
+          winAnnouncement.className = "text-xl font-black text-green-400";
+          winDesc.innerText = "Seu time jogou um futebol de elite, dominando as rodadas do oponente com raça!";
+        } else {
+          winAnnouncement.innerText = "🥈 RIVAL LEVOU A TAÇA!";
+          winAnnouncement.className = "text-xl font-black text-rose-500";
+          winDesc.innerText = "Faltou entrosamento tático em campo! Refine as suas decisões e tente novamente.";
+        }
+        changeScreen('END');
+      }
+
+      function restartMatch() {
+        state.playerScore = 0;
+        state.opponentScore = 0;
+        sounds.playRefereeWhistle();
+        initCoinFlipScreen();
+      }
+
+      // GENERATE WHATSAPP PAYLOAD CODE
+      function getWhatsappPayloadLink() {
+        const payload = {
+          mode: 'MP',
+          score: [state.playerScore, state.opponentScore],
+          playerHand: state.playerHand,
+          opponentHand: state.opponentHand,
+          playerDeck: state.playerDeck,
+          opponentDeck: state.opponentDeck,
+          coinWinner: state.coinWinner,
+          isRevealed: false
+        };
+
+        const converted = btoa(JSON.stringify(payload));
+        const fullMsg = `Vamos jogar o Black Jack da Copa 2026! ⚽🏆\n\nEu fiz a minha jogada. Agora é a sua vez! Copie todo o código abaixo, abra o site e clique em "Importar e Jogar":\n\nCOPA2026#${converted}`;
+        return `https://wa.me/?text=${encodeURIComponent(fullMsg)}`;
+      }
+
+      function copyPayloadCode() {
+        const payload = {
+          mode: 'MP',
+          score: [state.playerScore, state.opponentScore],
+          playerHand: state.playerHand,
+          opponentHand: state.opponentHand,
+          playerDeck: state.playerDeck,
+          opponentDeck: state.opponentDeck,
+          coinWinner: state.coinWinner,
+          isRevealed: false
+        };
+
+        const code = "COPA2026#" + btoa(JSON.stringify(payload));
+        navigator.clipboard.writeText(code);
+        showBanner("Código copiado com sucesso! Compartilhe.");
+      }
+
+      // IMPORT CHALLENGE CODE
+      function importChallengeCode() {
+        const txt = document.getElementById('import-code-area').value.trim();
+        if (!txt) {
+          alert("Cole um código de desafio válido para carregar.");
+          return;
+        }
+
+        try {
+          const parts = txt.split("COPA2026#");
+          if (parts.length < 2) {
+            alert("Formato incorreto ou incompleto! Certifique-se de copiar todo o texto começando com COPA2026#");
+            return;
+          }
+
+          const decoded = JSON.parse(atob(parts[1].trim()));
+          
+          state.mode = 'MP_WHATSAPP';
+          state.playerScore = decoded.score[0];
+          state.opponentScore = decoded.score[1];
+          
+          // Swap hands so that friend is player
+          state.playerHand = decoded.opponentHand;
+          state.opponentHand = decoded.playerHand;
+          
+          state.playerDeck = decoded.opponentDeck;
+          state.opponentDeck = decoded.playerDeck;
+          
+          state.coinWinner = decoded.coinWinner;
+          state.activeTurn = 'player';
+          state.draftState = 'PLAY_PHASE';
+          state.isRevealed = false;
+          state.mpPhase = 'YOUR_TURN';
+
+          sounds.playRefereeWhistle();
+          changeScreen('GAME');
+          document.getElementById('opponent-board-title').innerText = "Elenco de Envio";
+          updateInterface();
+          showBanner("Importado com sucesso! É o seu lance na Copa!");
+        } catch(e) {
+          alert("Erro ao decodificar a partida. Verifique se o código não foi cortado!");
+          console.error(e);
+        }
+      }
+
+      // INTERFACE STATE REFRESHER DOM MUTATOR
+      function updateInterface() {
+        // plance score board numbers
+        document.getElementById('score-player').innerText = state.playerScore;
+        document.getElementById('score-opponent').innerText = state.opponentScore;
+
+        const badge = document.getElementById('game-turn-badge');
+        if (state.activeTurn === 'player') {
+          badge.innerText = "⚽ Seu lance! Ajuste sua escalação";
+          badge.className = "bg-emerald-500 text-slate-950 font-extrabold px-3 py-1 rounded-full text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 animate-pulse";
+        } else {
+          badge.innerText = state.mode === 'MP_LOCAL' ? "🛡️ Lance do Amigo! (Vez do Rival)" : "🛡️ CPU controlando campo de posse...";
+          badge.className = "bg-amber-500 text-slate-950 font-extrabold px-3 py-1 rounded-full text-xs uppercase tracking-wider shadow-lg shadow-amber-500/10 flex items-center gap-1.5";
+        }
+
+        // Totals display
+        const playerTotalVal = getHandScore(state.playerHand);
+        const opponentTotalVal = getHandScore(state.opponentHand);
+
+        document.getElementById('player-total-lbl').innerText = playerTotalVal;
+        
+        // Show opponent totals only if revealed or WhatsApp challenge review
+        const isOppRevealed = state.isRevealed || (state.mode === 'MP_WHATSAPP' && state.mpPhase === 'WAITING_TURN');
+        document.getElementById('opponent-total-lbl').innerText = isOppRevealed ? opponentTotalVal : '?';
+
+        // Grid contents
+        const playerHandGrid = document.getElementById('player-hand-grid');
+        playerHandGrid.innerHTML = state.playerHand.map(item => createCardHtml(item.card, item.assignedValue, true)).join('');
+
+        const opponentHandGrid = document.getElementById('opponent-hand-grid');
+        opponentHandGrid.innerHTML = state.opponentHand.map((item, idx) => {
+          const showCardFace = idx === 0 || isOppRevealed;
+          return createCardHtml(item.card, item.assignedValue, showCardFace);
+        }).join('');
+
+        // Action mechanics buttons
+        const controlsBox = document.getElementById('game-controls-box');
+        controlsBox.innerHTML = '';
+
+        if (state.mpPhase === 'YOUR_TURN' && !state.isRevealed) {
+          
+          // DRAFT PHASE ACTIONS
+          if (state.draftState && state.draftState !== 'PLAY_PHASE') {
+            if (state.activeTurn === 'player') {
+              const textBtn = (state.draftState === 'P1_C1' || state.draftState === 'P2_C1') ? 'ESCOLHER REFORÇO 1 da escalação' : 'ESCOLHER REFORÇO 2 da escalação';
+              controlsBox.innerHTML = `
+                <button onclick="handleDraftDraw('player')" class="w-full bg-gradient-to-r from-yellow-400 via-green-500 to-emerald-600 hover:from-yellow-350 hover:to-emerald-500 text-slate-950 font-black py-4 px-6 rounded-2xl text-xs sm:text-sm tracking-widest border-b-4 border-emerald-800 shadow-lg active:scale-95 transition-all text-center uppercase flex items-center justify-center gap-2 cursor-pointer border-0">
+                  <span>🃏</span> ${textBtn}
+                </button>
+              `;
+            } else {
+              // MP local selection triggers pass button
+              if (state.mode === 'MP_LOCAL') {
+                controlsBox.innerHTML = `
+                  <div class="w-full text-center py-4 bg-slate-900/60 rounded-xl border border-slate-800">
+                    <span class="text-xs font-mono text-amber-500 animate-pulse uppercase tracking-widest block">🛡️ Vez do Rival Escolher Craque!</span>
+                    <button onclick="handleDraftDraw('opponent')" class="mt-3 mx-auto flex items-center justify-center gap-1.5 bg-yellow-400 hover:bg-yellow-350 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs uppercase cursor-pointer border-b-2 border-yellow-700 border-0">
+                      <span>🃏</span> ESCOLHER REFORÇO (Amigo)
+                    </button>
+                  </div>
+                `;
+              } else {
+                controlsBox.innerHTML = `
+                  <div class="w-full text-center py-3 bg-slate-900/50 rounded-xl border border-slate-800/80">
+                    <span class="text-[11px] font-mono text-amber-500 animate-pulse uppercase tracking-widest leading-loose">🛡️ CPU decidindo tática de escala...</span>
+                  </div>
+                `;
+              }
+            }
+          } 
+          
+          // GAMEPLAY CARD PLAYER HIT / STAND
+          else {
+            if (state.activeTurn === 'player') {
+              controlsBox.innerHTML = `
+                <div class="flex items-center gap-3 w-full">
+                  <button onclick="executeHit()" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-slate-950 font-black py-4 rounded-xl text-xs sm:text-sm tracking-wider shadow-lg active:scale-95 cursor-pointer border-b-4 border-emerald-800 uppercase flex items-center justify-center gap-1.5 border-0">
+                    Pedir Carta 🃏 (HIT)
+                  </button>
+                  <button onclick="handleStandAction()" class="flex-1 bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-400 hover:to-red-500 text-white font-black py-4 rounded-xl text-xs sm:text-sm tracking-wider shadow-lg active:scale-95 cursor-pointer border-b-4 border-red-800 uppercase flex items-center justify-center gap-1.5 border-0">
+                    Parar Avanço ✋ (STAND)
+                  </button>
+                </div>
+              `;
+            } else {
+              if (state.mode === 'MP_LOCAL') {
+                controlsBox.innerHTML = `
+                  <div class="flex items-center gap-3 w-full">
+                    <button onclick="executeRivalHit()" class="flex-1 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-black py-3.5 rounded-xl text-xs tracking-wider shadow-lg active:scale-95 cursor-pointer uppercase border-b-4 border-amber-700 border-0">
+                      (RIVAL) Carta 🃏
+                    </button>
+                    <button onclick="handleStandAction()" class="flex-1 bg-slate-900 border border-slate-700 text-slate-300 font-black py-3.5 rounded-xl text-xs tracking-wider shadow-lg active:scale-95 cursor-pointer uppercase border-0">
+                      (RIVAL) Parar ✋
+                    </button>
+                  </div>
+                `;
+              } else {
+                controlsBox.innerHTML = `
+                  <div class="w-full text-center py-3 bg-slate-900/50 rounded-xl border border-slate-800/80">
+                    <span class="text-xs font-mono text-amber-500 animate-pulse uppercase tracking-widest block">🛡️ O adversário está decidindo a tática...</span>
+                  </div>
+                `;
+              }
+            }
+          }
+
+        } else if (state.mpPhase === 'WAITING_TURN' && state.mode === 'MP_WHATSAPP') {
+          controlsBox.innerHTML = `
+            <div class="bg-slate-900/90 border-2 border-green-500/30 p-4 rounded-2xl relative text-center">
+              <div class="flex justify-center mb-1">
+                <span class="text-2xl">📱</span>
+              </div>
+              <h4 class="text-sm font-black text-green-400 uppercase tracking-tight">Fim do Seu Lance!</h4>
+              <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                Você encerrou com <strong class="text-yellow-400">${playerTotalVal} pontos</strong>. Agora copie o link/código abaixo e envie para seu amigo responder via WhatsApp!
+              </p>
+              <div class="grid grid-cols-2 gap-2.5 mt-4">
+                <button onclick="copyPayloadCode()" class="bg-slate-950 hover:bg-slate-800 border border-yellow-500/20 text-yellow-400 text-xs font-extrabold py-3.5 px-3 rounded-xl flex items-center justify-center gap-1 cursor-pointer border-0">
+                  Copiar Código
+                </button>
+                <a href="${getWhatsappPayloadLink()}" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-500 text-slate-950 text-xs font-black py-3.5 px-3 rounded-xl flex items-center justify-center gap-1 transition-all no-underline">
+                  Enviar Amigo
+                </a>
+              </div>
+              <button onclick="changeScreen('HOME')" class="mt-4 text-xs font-bold text-slate-400 hover:text-white underline bg-transparent border-0">
+                Encerrar e Voltar à Entrada
+              </button>
+            </div>
+          `;
+        }
+      }
+
+      // Initial greeting whistle trigger on click
+      window.addEventListener('click', function welcomeGreeting() {
+        sounds.playRefereeWhistle();
+        showBanner("Seja bem-vindo ao Black Jack da Copa 2026!");
+        window.removeEventListener('click', welcomeGreeting);
+      });
+    </script>
   </body>
 </html>
-
