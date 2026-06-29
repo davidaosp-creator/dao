@@ -442,19 +442,36 @@
           if (state.isMuted) return;
           try {
             const ctx = getAudioContext();
-            const t = ctx.currentTime;
+            const time = ctx.currentTime;
+            
             const osc1 = ctx.createOscillator();
             const osc2 = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc1.type = 'sine'; osc1.frequency.setValueAtTime(1400, t);
-            osc1.frequency.exponentialRampToValueAtTime(1800, t + 0.15);
-            osc2.type = 'sine'; osc2.frequency.setValueAtTime(2200, t);
-            gain.gain.setValueAtTime(0, t);
-            gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-            osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
-            osc1.start(t); osc2.start(t); osc1.stop(t + 0.45); osc2.stop(t + 0.45);
-          } catch(e){}
+            const gainNode = ctx.createGain();
+
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(1400, time);
+            osc1.frequency.exponentialRampToValueAtTime(1800, time + 0.05);
+
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(2200, time);
+            osc2.frequency.exponentialRampToValueAtTime(2600, time + 0.05);
+
+            gainNode.gain.setValueAtTime(0, time);
+            gainNode.gain.linearRampToValueAtTime(0.3, time + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.2); 
+
+            osc1.connect(gainNode);
+            osc2.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            osc1.start(time);
+            osc2.start(time);
+            
+            osc1.stop(time + 0.2);
+            osc2.stop(time + 0.2);
+          } catch (e) {
+            console.warn("Audio disabled or error in playCoin", e);
+          }
         },
         playCardDraw: () => {
           if (state.isMuted) return;
@@ -688,9 +705,14 @@
         document.getElementById('coin-spin-btn').classList.add('hidden');
         document.getElementById('coin-selection-container').classList.add('hidden');
         
-        sounds.playCoin();
-        setTimeout(() => sounds.playCoin(), 650);
-        setTimeout(() => sounds.playCoin(), 1300);
+        setTimeout(()=>sounds.playCoin(),0);
+        setTimeout(()=>sounds.playCoin(),200);
+        setTimeout(()=>sounds.playCoin(),450);
+        setTimeout(()=>sounds.playCoin(),750);
+        setTimeout(()=>sounds.playCoin(),1100);
+        setTimeout(()=>sounds.playCoin(),1500);
+        setTimeout(()=>sounds.playCoin(),1900);
+        setTimeout(()=>sounds.playCoin(),2200);
 
         const resultOptions = ['cara', 'coroa'];
         const outcome = resultOptions[Math.floor(Math.random() * 2)];

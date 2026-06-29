@@ -21,13 +21,16 @@ export default function CoinFlip({ onCoinFlipFinished, isMuted }: CoinFlipProps)
     setFlipResult(null);
     setWinner(null);
     
-    // Play procedurally synthesized coin sound ticks!
+    // Play procedurally synthesized coin sound ticks with precise synchronization
     if (!isMuted) {
-      soundEffects.playCoin();
-      // Tick again mid-spin
-      setTimeout(() => soundEffects.playCoin(), 600);
-      setTimeout(() => soundEffects.playCoin(), 1200);
-      setTimeout(() => soundEffects.playCoin(), 1800);
+      setTimeout(() => soundEffects.playCoin(), 0);
+      setTimeout(() => soundEffects.playCoin(), 200);
+      setTimeout(() => soundEffects.playCoin(), 450);
+      setTimeout(() => soundEffects.playCoin(), 750);
+      setTimeout(() => soundEffects.playCoin(), 1100);
+      setTimeout(() => soundEffects.playCoin(), 1500);
+      setTimeout(() => soundEffects.playCoin(), 1900);
+      setTimeout(() => soundEffects.playCoin(), 2200);
     }
 
     // Determine result

@@ -20,24 +20,23 @@ export const soundEffects = {
       const ctx = getAudioContext();
       const time = ctx.currentTime;
       
-      // Dual high frequencies for metal resonance
       const osc1 = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
       osc1.type = 'sine';
       osc1.frequency.setValueAtTime(1400, time);
-      osc1.frequency.exponentialRampToValueAtTime(1800, time + 0.15);
-      osc1.frequency.exponentialRampToValueAtTime(1200, time + 0.4);
+      // Reduzi a rampa para soar mais rápido
+      osc1.frequency.exponentialRampToValueAtTime(1800, time + 0.05);
 
       osc2.type = 'sine';
       osc2.frequency.setValueAtTime(2200, time);
-      osc2.frequency.exponentialRampToValueAtTime(2600, time + 0.1);
-      osc2.frequency.exponentialRampToValueAtTime(1900, time + 0.35);
+      osc2.frequency.exponentialRampToValueAtTime(2600, time + 0.05);
 
+      // Ajuste aqui: volume sobe rápido e cai drasticamente (encurtado para 0.2s)
       gainNode.gain.setValueAtTime(0, time);
-      gainNode.gain.linearRampToValueAtTime(0.3, time + 0.02);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+      gainNode.gain.linearRampToValueAtTime(0.3, time + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.2); 
 
       osc1.connect(gainNode);
       osc2.connect(gainNode);
@@ -45,8 +44,10 @@ export const soundEffects = {
 
       osc1.start(time);
       osc2.start(time);
-      osc1.stop(time + 0.5);
-      osc2.stop(time + 0.5);
+      
+      // O som agora morre em 0.2 segundos, impedindo o "vazamento"
+      osc1.stop(time + 0.2);
+      osc2.stop(time + 0.2);
     } catch (e) {
       console.warn("Audio disabled or error in playCoin", e);
     }
