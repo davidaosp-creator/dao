@@ -60,7 +60,7 @@
       }
     </style>
   </head>
-  <body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between relative overflow-hidden font-sans select-none pb-8 sm:pb-12">
+  <body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between relative overflow-y-auto font-sans select-none pb-8 sm:pb-12">
     <!-- background Pitch -->
     <div class="absolute inset-0 pitch-bg opacity-30 pointer-events-none"></div>
     <div class="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/40 to-slate-950 pointer-events-none"></div>
@@ -812,7 +812,7 @@
 
         const kit = getKitColors(card.country);
         const displayVal = assignedValue !== undefined ? assignedValue : card.blackjackValue;
-        const imgUrl = `https://raw.githubusercontent.com/davidaosp-creator/copa2026-super-trunfo/main/app/src/main/res/drawable/img_card_${card.id}.png`;
+        const imgUrl = `https://raw.githubusercontent.com/davidaosp/copa2026-super-trunfo/main/app/src/main/res/drawable/img_card_${card.id}.png`;
         
         let headerStyles = card.isGold
           ? 'bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 border-2.5 border-yellow-200'
